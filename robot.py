@@ -13,7 +13,7 @@ import wpimath
 from phoenix5 import WPI_TalonSRX
 from phoenix5 import sensors
 import phoenix5._ctre
-from wpimath import applyDeadband
+
 #import rev
 #import phoenix6
 #from phoenix6 import hardware, controls, configs
@@ -74,11 +74,10 @@ class MyRobot(wpilib.TimedRobot):
         x = -self.controller.getLeftX()
         y = -self.controller.getLeftY()
         z = self.controller.getRightX()
-        print(f"Before DB: ", x)
-        x = applyDeadband(x, 0.05, 0.1)
-        print("  After DB: ", x)
-        #y = applyDeadband(y, 0.05, 0.1)
-        #z = applyDeadband(z, 0.05, 0.1)
+        
+        x = self.apply_deadband(x, 0.05, 0.25)
+        y = self.apply_deadband(y, 0.05, 0.25)
+        z = self.apply_deadband(z, 0.05, 0.25)
 
         x = self.exponential_control(x, 2.5)
         y = self.exponential_control(y, 2.5)
@@ -95,12 +94,28 @@ class MyRobot(wpilib.TimedRobot):
         left_wheel = -0.5 * x + math.sqrt(3) / 2 * y + z
         rear_wheel = x + z
 
-        #self.m_leftDrive_Motor.set(left_wheel)
-        #self.m_rightDrive_Motor.set(right_wheel)
-        #self.m_rearDrive_Motor.set(rear_wheel)
+        self.m_leftDrive_Motor.set(left_wheel)
+        self.m_rightDrive_Motor.set(right_wheel)
+        self.m_rearDrive_Motor.set(rear_wheel)
 
     def exponential_control(self, input_val, exponent_val):
-        return math.copysign(math.pow(abs(input_val), exponent_val), input_val) * 0.4
+        return math.copysign(math.pow(abs(input_val), exponent_val), input_val) 
+
+    def apply_deadband(self, value, deadband, maxMagnitude):
+        magnitude = abs(value)
+        if (magnitude > deadband):
+            #if (maxMagnitude / deadband > 1.0E12):
+                #if(value > 0.0):
+                    #return value - deadband
+                #else:
+                    #return value + deadband    
+            if (value > 0.0):
+                return value * (maxMagnitude - deadband) + deadband
+            else:
+                return (value * (maxMagnitude - deadband) + deadband) * -1
+        else:
+            return 0.0
+
 
 """
     def m_drive(self):
@@ -127,6 +142,7 @@ class MyRobot(wpilib.TimedRobot):
         self.m_rearDrive_Motor.set(rear_wheel)
 
     """
+
 
 
 if __name__ == "__main__":
