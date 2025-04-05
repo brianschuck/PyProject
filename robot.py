@@ -33,24 +33,12 @@ class MyRobot(wpilib.TimedRobot):
         self.timer = wpilib.Timer()
         self.IMU = phoenix5.sensors.PigeonIMU(self.m_leftDrive_Motor)
 
-        # We need to invert one side of the drivetrain so that positive voltages
-        # result in both sides moving forward. Depending on how your robot's
-        # gearbox is constructed, you might have to invert the left side instead.
-        #self.rightDrive.setInverted(True)
-
     def autonomousInit(self):
         """This function is run once each time the robot enters autonomous mode."""
         self.timer.restart()
 
     def autonomousPeriodic(self):
         """This function is called periodically during autonomous."""
-
-        # Drive for two seconds
-        #if self.timer.get() < 2.0:
-        #    # Drive forwards half speed, make sure to turn input squaring off
-        #    self.robotDrive.arcadeDrive(0.5, 0, squareInputs=False)
-        #else:
-        #    self.robotDrive.stopMotor()  # Stop robot
 
     def teleopInit(self):
         """This function is called once each time the robot enters teleoperated mode."""
@@ -83,7 +71,7 @@ class MyRobot(wpilib.TimedRobot):
         y = self.exponential_control(y, 2.0)
         z = self.exponential_control(z, 2.0)
 
-        # covert the original 0 heading(field) to a drive vector based on current heading
+        # calculate the field heading (original 0) from the current heading
         heading = self.IMU.getFusedHeading()
         theta = heading * math.pi / 180     # heading in degrees to radians
         yout = (x * math.sin(theta)) + (y * math.cos(theta))
@@ -91,6 +79,7 @@ class MyRobot(wpilib.TimedRobot):
         y = yout
         x = xout
 
+        # wheel vectors from cartesian inputs /__\  |__
         right_wheel = -0.5 * x - math.sqrt(3)/2 * y + z
         left_wheel = -0.5 * x + math.sqrt(3)/2 * y + z
         rear_wheel = x + z
