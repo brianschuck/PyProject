@@ -74,24 +74,25 @@ class MyRobot(wpilib.TimedRobot):
         x = -self.controller.getLeftX()
         y = -self.controller.getLeftY()
         z = self.controller.getRightX()
-        
-        x = self.apply_deadband(x, 0.05, 0.25)
-        y = self.apply_deadband(y, 0.05, 0.25)
-        z = self.apply_deadband(z, 0.05, 0.25)
+     
+        x = self.apply_deadband(x, 0.05, 0.75)
+        y = self.apply_deadband(y, 0.05, 0.75)
+        z = self.apply_deadband(z, 0.05, 0.6)
 
-        x = self.exponential_control(x, 2.5)
-        y = self.exponential_control(y, 2.5)
-        z = self.exponential_control(z, 2.5)
+        x = self.exponential_control(x, 2.0)
+        y = self.exponential_control(y, 2.0)
+        z = self.exponential_control(z, 2.0)
 
+        # covert the original 0 heading(field) to a drive vector based on current heading
         heading = self.IMU.getFusedHeading()
-        theta = heading * math.pi / 180
+        theta = heading * math.pi / 180     # heading in degrees to radians
         yout = (x * math.sin(theta)) + (y * math.cos(theta))
         xout = (x * math.cos(theta)) - (y * math.sin(theta))
         y = yout
         x = xout
 
-        right_wheel = -0.5 * x - math.sqrt(3) / 2 * y + z
-        left_wheel = -0.5 * x + math.sqrt(3) / 2 * y + z
+        right_wheel = -0.5 * x - math.sqrt(3)/2 * y + z
+        left_wheel = -0.5 * x + math.sqrt(3)/2 * y + z
         rear_wheel = x + z
 
         self.m_leftDrive_Motor.set(left_wheel)
@@ -103,6 +104,7 @@ class MyRobot(wpilib.TimedRobot):
 
     def apply_deadband(self, value, deadband, maxMagnitude):
         magnitude = abs(value)
+        
         if (magnitude > deadband):
             #if (maxMagnitude / deadband > 1.0E12):
                 #if(value > 0.0):
@@ -112,7 +114,7 @@ class MyRobot(wpilib.TimedRobot):
             if (value > 0.0):
                 return value * (maxMagnitude - deadband) + deadband
             else:
-                return (value * (maxMagnitude - deadband) + deadband) * -1
+                return value * (maxMagnitude - deadband) - deadband
         else:
             return 0.0
 
